@@ -3,7 +3,6 @@ defmodule HelixBank.Internal.Account do
     alias HelixBank.Model.Account
     alias Helixbank.Repo
 
-
     def create_account(params) do
         account_number = generate_account_number()
         
@@ -93,7 +92,7 @@ defmodule HelixBank.Internal.Account do
         |> Repo.exists?()
     end
 
-    defp fetch_account_by_number(acc_number) do
+    def fetch_account_by_number(acc_number) do
         from(a in Account, 
             where: a.account_number == ^acc_number)
     end
