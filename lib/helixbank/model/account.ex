@@ -25,7 +25,7 @@ defmodule HelixBank.Model.Account do
     end
 
     defp validate_document(changeset, param) do
-        valid_sum = 
+        valid_sum =
             [22,33,44,55,66,77,88,99]
 
         valid_param =

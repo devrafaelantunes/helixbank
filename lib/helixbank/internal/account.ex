@@ -5,7 +5,7 @@ defmodule HelixBank.Internal.Account do
 
     def create_account(params) do
         account_number = generate_account_number()
-        
+
         new_params =
             %{account_number: account_number, agency_id: 0001, amount: 0}
             |> Map.merge(params)
@@ -18,18 +18,18 @@ defmodule HelixBank.Internal.Account do
 
     def deposit(account_number, amount) do
         if account_exists?(account_number) do
-            old_value = 
+            old_value =
                 account_number
                 |> get_amount_from_account() ## tiurar isso fazer um proprio e colocar select
-            
+
             fetch_account_by_number(account_number)
             |> Repo.one()
             |> Account.update_amount(old_value + amount)
             |> Repo.update()
-        
-        
+
+
         else
-            raise "the account number does not exist"
+            {:error, :invalid_account}
         end
     end
 
@@ -39,36 +39,40 @@ defmodule HelixBank.Internal.Account do
                 withdraw(account_number, amount)
                 deposit(to_account, amount)
             else
-                raise "you have no funds"
+                {:error, :no_funds}
             end
 
         else
-            raise "the account does not exist"
+            {:error, :invalid_account}
         end
 
 
-    end 
+    end
 
     def withdraw(account_number, amount) do
         if account_exists?(account_number) do
-            old_value = 
-                account_number
-                |> get_amount_from_account()
+            if get_amount_from_account(account_number) >= amount do
+                old_value =
+                    account_number
+                    |> get_amount_from_account()
 
-            fetch_account_by_number(account_number)
-            |> Repo.one()
-            |> Account.update_amount(old_value - amount)
-            |> Repo.update()
+                fetch_account_by_number(account_number)
+                |> Repo.one()
+                |> Account.update_amount(old_value - amount)
+                |> Repo.update()
+            else
+                {:error, :no_funds}
+            end
         else
-            raise "the account number does not exist"
+            {:error, :invalid_account}
 
         end
 
-    
+
     end
 
-    defp get_amount_from_account(account_number) do
-        query = 
+    def get_amount_from_account(account_number) do
+        query =
             from(a in Account,
                 where: a.account_number == ^account_number,
                 select: a.amount)
@@ -93,7 +97,7 @@ defmodule HelixBank.Internal.Account do
     end
 
     def fetch_account_by_number(acc_number) do
-        from(a in Account, 
+        from(a in Account,
             where: a.account_number == ^acc_number)
     end
 
