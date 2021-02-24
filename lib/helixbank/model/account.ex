@@ -16,14 +16,15 @@ defmodule HelixBank.Model.Account do
     end
 
     def change_account(%__MODULE__{} = account) do
-        create_changeset(account, %{})
+        change(account)
+        #create_changeset(account, %{})
     end
 
     def create_changeset(account, params) do
         account_number = Internal.generate_account_number()
 
         new_params =
-            %{"account_number" => account_number, "agency_id" => 0001, "amount" => 0}
+            %{account_number: account_number, agency_id: 0001, amount: 0}
             |> Map.merge(params)
 
         account
@@ -31,23 +32,29 @@ defmodule HelixBank.Model.Account do
         |> validate_required([:name, :document, :agency_id, :account_number])
         |> unique_constraint(:document)
         |> validate_length(:document, min: 11, max: 11)
-        #|> validate_document(:document)
+        |> validate_document(params.document)
     end
 
-    def validate_document(changeset, param) do
+    def validate_document(changeset, cpf) do
+        if Integer.parse(cpf) == :error do
+            changeset
+        else
         valid_sum =
             [22,33,44,55,66,77,88,99]
 
-        valid_param =
-            String.to_integer(param)
+        valid_cpf =
+            String.to_integer(cpf)
             |> Integer.digits()
             |> Enum.sum()
 
-        if Enum.member?(valid_sum, valid_param) do
+        if Enum.member?(valid_sum, valid_cpf) do
             changeset
         else
             add_error(changeset, :document, "the document is not valid")
         end
+
+        end
+
     end
 
     def update_amount(account, new_value) do

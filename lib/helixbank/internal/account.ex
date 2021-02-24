@@ -3,7 +3,7 @@ defmodule HelixBank.Internal.Account do
     alias HelixBank.Model.Account
     alias Helixbank.Repo
 
-    def create_account(params \\ %{}) do
+    def create_account(params) do
         %Account{}
         |> Account.create_changeset(params)
         |> Repo.insert
@@ -97,7 +97,7 @@ defmodule HelixBank.Internal.Account do
     def list_accounts() do
         # SELECT NAME FROM ACCOUNTS
         from(a in Account,
-            select: a.document)
+            select: {a.name, a.document, a.account_number, a.amount})
     end
 
 end
