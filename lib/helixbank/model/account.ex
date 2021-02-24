@@ -15,16 +15,26 @@ defmodule HelixBank.Model.Account do
         timestamps()
     end
 
-    def create_changeset(params) do
-        %__MODULE__{}
-        |> cast(params, [:name, :document, :amount, :agency_id, :account_number])
-        |> validate_required([:name, :document, :agency_id, :account_number])
-        |> unique_constraint(:document)
-        |> validate_length(:document, min: 11)
-        |> validate_document(params.document)
+    def change_account(%__MODULE__{} = account) do
+        create_changeset(account, %{})
     end
 
-    defp validate_document(changeset, param) do
+    def create_changeset(account, params) do
+        account_number = Internal.generate_account_number()
+
+        new_params =
+            %{"account_number" => account_number, "agency_id" => 0001, "amount" => 0}
+            |> Map.merge(params)
+
+        account
+        |> cast(new_params, [:name, :document, :amount, :agency_id, :account_number])
+        |> validate_required([:name, :document, :agency_id, :account_number])
+        |> unique_constraint(:document)
+        |> validate_length(:document, min: 11, max: 11)
+        #|> validate_document(:document)
+    end
+
+    def validate_document(changeset, param) do
         valid_sum =
             [22,33,44,55,66,77,88,99]
 

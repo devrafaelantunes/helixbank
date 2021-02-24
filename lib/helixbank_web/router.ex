@@ -17,6 +17,8 @@ defmodule HelixbankWeb.Router do
     pipe_through :browser
 
     get "/", PageController, :index
+    get "/home", HomeController, :index
+    resources "/user", UserController, only: [:create, :new]
   end
 
   # Other scopes may use custom stacks.

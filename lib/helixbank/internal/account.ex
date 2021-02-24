@@ -3,17 +3,10 @@ defmodule HelixBank.Internal.Account do
     alias HelixBank.Model.Account
     alias Helixbank.Repo
 
-    def create_account(params) do
-        account_number = generate_account_number()
-
-        new_params =
-            %{account_number: account_number, agency_id: 0001, amount: 0}
-            |> Map.merge(params)
-
-        new_params
-        |> Account.create_changeset()
+    def create_account(params \\ %{}) do
+        %Account{}
+        |> Account.create_changeset(params)
         |> Repo.insert
-
     end
 
     def deposit(account_number, amount) do
@@ -81,7 +74,7 @@ defmodule HelixBank.Internal.Account do
 
     end
 
-    defp generate_account_number() do
+    def generate_account_number() do
         acc_number = Enum.random(2222..9999)
 
         if account_exists?(acc_number) do
@@ -99,6 +92,12 @@ defmodule HelixBank.Internal.Account do
     def fetch_account_by_number(acc_number) do
         from(a in Account,
             where: a.account_number == ^acc_number)
+    end
+
+    def list_accounts() do
+        # SELECT NAME FROM ACCOUNTS
+        from(a in Account,
+            select: a.document)
     end
 
 end
