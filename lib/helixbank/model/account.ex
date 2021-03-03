@@ -11,6 +11,8 @@ defmodule HelixBank.Model.Account do
         field :amount, :float
         field :agency_id, :integer
         field :account_number, :integer
+        field :password, :string, virtual: true
+        field :password_hash, :string
 
         timestamps()
     end
@@ -18,6 +20,10 @@ defmodule HelixBank.Model.Account do
     def change_account(%__MODULE__{} = account) do
         change(account)
         #create_changeset(account, %{})
+    end
+
+    def change_registration(%__MODULE__{} = account) do
+        change(account)
     end
 
     def create_changeset(account, params) do
@@ -35,6 +41,27 @@ defmodule HelixBank.Model.Account do
         |> validate_document(params.document)
     end
 
+    defp put_pass_hash(changeset) do
+        case changeset do
+            %Ecto.Changeset{valid?: true, changes: %{password: pass}} ->
+                put_change(changeset, :password_hash, Pbkdf2.hash_pwd_salt(pass))
+
+            _ ->
+                changeset
+        end
+
+
+    end
+
+    def create_registration(account, params) do
+        account
+        |> create_changeset(params)
+        |> cast(params, [:password])
+        |> validate_required(:password)
+        |> validate_length(:password, min: 6, max: 100)
+        |> put_pass_hash()
+    end
+
     def validate_document(changeset, cpf) do
         if Integer.parse(cpf) == :error do
             changeset
@@ -47,17 +74,16 @@ defmodule HelixBank.Model.Account do
             |> Integer.digits()
             |> Enum.sum()
 
-        if Enum.member?(valid_sum, valid_cpf) do
-            changeset
-        else
-            add_error(changeset, :document, "the document is not valid")
+            if Enum.member?(valid_sum, valid_cpf) do
+                changeset
+            else
+                add_error(changeset, :document, "the document is not valid")
+            end
         end
-
-        end
-
     end
 
     def update_amount(account, new_value) do
         change(account, amount: new_value)
     end
+
 end

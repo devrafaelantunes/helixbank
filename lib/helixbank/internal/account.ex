@@ -9,6 +9,31 @@ defmodule HelixBank.Internal.Account do
         |> Repo.insert
     end
 
+    def register_account(params) do
+        %Account{}
+        |> Account.create_registration(params)
+        |> Repo.insert()
+
+
+    end
+
+    def authenticate_by_username_and_pass(document, given_pass) do
+        account = get_account_by(document: document)
+
+        cond do
+            account && Pbkdf2.verify_pass(given_pass, account.password_hash) ->
+                {:ok, account}
+
+            account ->
+                {:error, :unauthorized}
+
+            true ->
+                Pbkdf2.no_user_verify()
+                {:error, :not_found}
+        end
+
+    end
+
     def deposit(account_number, amount) do
         if account_exists?(account_number) do
             old_value =
@@ -100,4 +125,11 @@ defmodule HelixBank.Internal.Account do
             select: {a.name, a.document, a.account_number, a.amount})
     end
 
+    def get_account(id) do
+        Repo.get(Account, id)
+    end
+
+    def get_account_by(params) do
+        Repo.get_by(Account, params)
+    end
 end

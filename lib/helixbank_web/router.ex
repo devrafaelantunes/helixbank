@@ -7,6 +7,7 @@ defmodule HelixbankWeb.Router do
     plug :fetch_flash
     plug :protect_from_forgery
     plug :put_secure_browser_headers
+    plug HelixBankWeb.Auth
   end
 
   pipeline :api do
@@ -18,7 +19,8 @@ defmodule HelixbankWeb.Router do
 
     get "/", PageController, :index
     get "/home", HomeController, :index
-    resources "/user", UserController, only: [:create, :new]
+    resources "/user", UserController, only: [:create, :new, :index]
+    resources "/session", SessionController, only: [:new, :create, :delete]
   end
 
   # Other scopes may use custom stacks.

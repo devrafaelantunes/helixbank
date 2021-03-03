@@ -17,5 +17,11 @@
             <%= error_tag f, :document%>
         </div>
 
+        <div>
+            <%= password_input f, :password, placeholder: "Password" %>
+            <%= error_tag f, :password %>
+
+        </div>
+
         <%= submit "Create Account" %>
 <% end %>

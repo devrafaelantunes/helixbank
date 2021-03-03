@@ -9,10 +9,11 @@ defmodule Helixbank.Repo.Migrations.CreateTables do
       add :account_number, :integer, null: false
       add :agency_id, :integer, null: false
       add :document, :string, null: false
+      add :password_hash, :string
 
       timestamps()
-      
-    end 
+
+    end
 
     create unique_index(:account, [:document])
 
