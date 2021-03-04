@@ -18,8 +18,8 @@
            <li><%= link "Account Information", to: Routes.user_path(@conn, :info) %></li>
            <li><%= link "Main Menu", to: Routes.user_path(@conn, :index) %></li>
            <li><%= link "Deposit", to: Routes.user_path(@conn, :new_deposit) %></li>
-           <li><%= link "Withdraw", to: Routes.user_path(@conn, :new) %></li>
-           <li><%= link "Transfer", to: Routes.user_path(@conn, :new) %></li>
+           <li><%= link "Withdraw", to: Routes.user_path(@conn, :new_withdraw) %></li>
+           <li><%= link "Transfer", to: Routes.user_path(@conn, :new_transfer) %></li>
               <li>
                 <%= link "Log out",
                   to: Routes.session_path(@conn, :delete, @current_account.account_id),

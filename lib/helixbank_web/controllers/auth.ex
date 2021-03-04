@@ -3,7 +3,6 @@ defmodule HelixBankWeb.Auth do
 
   def init(opts), do: opts
 
-
   def call(conn, _opts) do
     account_id = get_session(conn, :account_id)
     account = account_id && HelixBank.Internal.Account.get_account(account_id)

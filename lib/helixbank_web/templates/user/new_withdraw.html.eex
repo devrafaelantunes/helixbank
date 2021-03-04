@@ -1,0 +1,10 @@
+<h1>Make a Withdraw</h1>
+
+<%= form_for :withdraw, Routes.user_path(@conn, :make_withdraw), [as: :session], fn f -> %>
+    <div>
+        <%= number_input f, :amount, placeholder: "amount" %>
+    </div>
+
+    <%= submit "Withdraw" %>
+<% end %>
+

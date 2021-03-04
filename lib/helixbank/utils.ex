@@ -1,5 +1,4 @@
 defmodule HelixBank.Utils do
-
   def atomify_map(map) when is_map(map) do
     # String.to_atom("foo")
     Enum.reduce(map, %{}, fn {key, value}, new_map ->
@@ -14,5 +13,4 @@ defmodule HelixBank.Utils do
   end
 
   def atomify_map(other), do: other
-
 end

@@ -1,0 +1,18 @@
+<h1>Transfer Money</h1>
+<p style="color: red;">The Transfer fee is R$1 per transaction.</p>
+
+<%= form_for :transfer, Routes.user_path(@conn, :make_transfer), [as: :session], fn f -> %>
+    <div>
+        <%= number_input f, :recipient_account_number, placeholder: "account number" %>
+    </div>
+    <div>
+        <%= number_input f, :amount, placeholder: "amount" %>
+    </div>
+
+    <div>
+        <p>Do you agree with the Transfer Fee? <%= checkbox f, :agreement%></p>
+    </div>
+
+    <%= submit "Transfer" %>
+<% end %>
+

@@ -1,6 +1,6 @@
 <section class="phx-hero">
   <h1><%= gettext "Welcome to %{name}!", name: "HelixBank" %></h1>
-  <p>Insira um slogan incrível aqui!</p>
+  <p>Open your account today, or log in!</p>
 </section>
 
 </section>

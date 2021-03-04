@@ -12,10 +12,8 @@ defmodule Helixbank.Repo.Migrations.CreateTables do
       add :password_hash, :string
 
       timestamps()
-
     end
 
     create unique_index(:account, [:document])
-
   end
 end
