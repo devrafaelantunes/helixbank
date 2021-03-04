@@ -1,0 +1,10 @@
+<h1>Make a Deposit</h1>
+
+<%= form_for :deposit, Routes.user_path(@conn, :make_deposit), [as: :session], fn f -> %>
+    <div>
+        <%= number_input f, :amount, placeholder: "amount" %>
+    </div>
+
+    <%= submit "Deposit" %>
+<% end %>
+

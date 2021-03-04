@@ -17,7 +17,7 @@ defmodule HelixBank.Internal.Account do
 
     end
 
-    def authenticate_by_username_and_pass(document, given_pass) do
+    def authenticate_by_document_and_pass(document, given_pass) do
         account = get_account_by(document: document)
 
         cond do

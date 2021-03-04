@@ -19,8 +19,13 @@ defmodule HelixbankWeb.Router do
 
     get "/", PageController, :index
     get "/home", HomeController, :index
-    resources "/user", UserController, only: [:create, :new, :index]
-    resources "/session", SessionController, only: [:new, :create, :delete]
+    scope "/user" do
+      get "/info", UserController, :info
+      get "/new_deposit", UserController, :new_deposit
+      post "/make_deposit", UserController, :make_deposit
+    end
+      resources "/user", UserController, [:create, :new, :index]
+      resources "/session", SessionController, only: [:new, :create, :delete]
   end
 
   # Other scopes may use custom stacks.

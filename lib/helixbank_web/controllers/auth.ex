@@ -16,4 +16,8 @@ defmodule HelixBankWeb.Auth do
     |> put_session(:account_id, account.account_id)
     |> configure_session(renew: true)
   end
+
+  def logout(conn) do
+    configure_session(conn, drop: true)
+  end
 end

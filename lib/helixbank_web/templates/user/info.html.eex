@@ -1,0 +1,5 @@
+<h1 style="color: blue; font-size: 50px; padding-top: 15px; padding-bottom: 14px;">Account Information:</h1>
+<h1>Account Balance: R$<%=@amount%></h1>
+<h1>Account Number: <%=@account_number%></h1>
+<h1>Agency Number: <%=@agency_number%></h1>
+<h1>Document Number: <%=@document%></h1>
