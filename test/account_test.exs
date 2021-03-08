@@ -3,6 +3,7 @@ defmodule HelixBank.Internal.AccountTest do
 
   alias Helixbank.Repo
   alias HelixBank.Internal.Account, as: AccountInternal
+  alias HelixBank.Model.Account, as: AccountModel
 
   setup do
     :ok = Ecto.Adapters.SQL.Sandbox.checkout(Helixbank.Repo)
@@ -49,6 +50,12 @@ defmodule HelixBank.Internal.AccountTest do
       assert {:error, changeset} = AccountInternal.register_account(new_params)
       assert changeset_error_to_string(changeset) == "document: the document is not valid"
     end
+    test "creating an account with a short password" do
+      new_params = Map.merge(@params, %{password: "1234"})
+
+      assert {:error, changeset} = AccountInternal.register_account(new_params)
+      assert changeset_error_to_string(changeset) == "password: should be at least 6 character(s)"
+    end
   end
 
   describe "testing authenticate function" do
@@ -92,6 +99,15 @@ defmodule HelixBank.Internal.AccountTest do
       assert AccountInternal.get_amount_from_account(account.account_number) == 0.0
     end
 
+    test "withdraw with no funds"  do
+      {:ok, account} = AccountInternal.register_account(@params)
+
+      assert AccountInternal.get_amount_from_account(account.account_number) == 0.0
+      assert {:ok, changeset} = AccountInternal.deposit(account.account_number, 100)
+      assert AccountInternal.get_amount_from_account(account.account_number) == 100
+      assert {:error, :no_funds} = AccountInternal.withdraw(account.account_number, 101)
+    end
+
     test "transfer or withdraw with no funds" do
       {:ok, account} = AccountInternal.register_account(@params)
       {:ok, account2} = AccountInternal.register_account(@params2)
@@ -119,6 +135,7 @@ defmodule HelixBank.Internal.AccountTest do
       assert AccountInternal.get_amount_from_account(account.account_number) == 0.0
       assert AccountInternal.get_amount_from_account(account2.account_number) == 100
     end
+
   end
 
 end
