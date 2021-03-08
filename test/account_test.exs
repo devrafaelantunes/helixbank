@@ -8,9 +8,9 @@ defmodule HelixBank.Internal.AccountTest do
     :ok = Ecto.Adapters.SQL.Sandbox.checkout(Helixbank.Repo)
   end
 
-  @params %{name: "dev01", document: "43082810837"}
-  @invalid_document %{document: "12445787493"}
-  @params2 %{name: "dev02", document: "43082811809"}
+  @params %{name: "dev01", document: "43082810837", password: "123456"}
+  @invalid_document %{document: "12445787493", password: "123456"}
+  @params2 %{name: "dev02", document: "43082811809", password: "123456"}
 
   defp changeset_error_to_string(changeset) do
     Ecto.Changeset.traverse_errors(changeset, fn {msg, opts} ->
@@ -26,7 +26,7 @@ defmodule HelixBank.Internal.AccountTest do
 
   describe "create an account" do
     test "creating an account with valid input" do
-      assert {:ok, account} = AccountInternal.create_account(@params)
+      assert {:ok, account} = AccountInternal.register_account(@params)
       assert account.document == @params.document
       assert account.name == @params.name
 
@@ -38,22 +38,43 @@ defmodule HelixBank.Internal.AccountTest do
     end
 
     test "creating an account with a document that has already been taken" do
-      assert {:ok, _} = AccountInternal.create_account(@params)
-      assert {:error, changeset} = AccountInternal.create_account(@params)
+      assert {:ok, _} = AccountInternal.register_account(@params)
+      assert {:error, changeset} = AccountInternal.register_account(@params)
       assert changeset_error_to_string(changeset) == "document: has already been taken"
     end
 
     test "creating an account with an invalid document number" do
       new_params = Map.merge(@params, @invalid_document)
 
-      assert {:error, changeset} = AccountInternal.create_account(new_params)
+      assert {:error, changeset} = AccountInternal.register_account(new_params)
       assert changeset_error_to_string(changeset) == "document: the document is not valid"
+    end
+  end
+
+  describe "testing authenticate function" do
+    test "creating account and testing the authenticate function with the right password" do
+      assert {:ok, changeset} = AccountInternal.register_account(@params)
+
+      assert {:ok, account} = 
+        AccountInternal.authenticate_by_document_and_pass(changeset.document, changeset.password)
+    end
+
+    test "creating account and testing the authenticate function with a wrong password" do
+      assert {:ok, changeset} = AccountInternal.register_account(@params)
+
+      assert {:error, :unauthorized} = 
+        AccountInternal.authenticate_by_document_and_pass(changeset.document, "wrongpassword")
+    end
+
+    test "trying to authenticate with an unexisting account" do
+      assert {:error, :not_found} = 
+        AccountInternal.authenticate_by_document_and_pass("12345678910", "somepassword")
     end
   end
 
   describe "transactions" do
     test "deposit" do
-      {:ok, account} = AccountInternal.create_account(@params)
+      {:ok, account} = AccountInternal.register_account(@params)
 
       assert AccountInternal.get_amount_from_account(account.account_number) == 0.0
 
@@ -62,7 +83,7 @@ defmodule HelixBank.Internal.AccountTest do
     end
 
     test "withdraw" do
-      {:ok, account} = AccountInternal.create_account(@params)
+      {:ok, account} = AccountInternal.register_account(@params)
 
       assert AccountInternal.get_amount_from_account(account.account_number) == 0.0
       assert {:ok, changeset} = AccountInternal.deposit(account.account_number, 100)
@@ -72,8 +93,8 @@ defmodule HelixBank.Internal.AccountTest do
     end
 
     test "transfer or withdraw with no funds" do
-      {:ok, account} = AccountInternal.create_account(@params)
-      {:ok, account2} = AccountInternal.create_account(@params2)
+      {:ok, account} = AccountInternal.register_account(@params)
+      {:ok, account2} = AccountInternal.register_account(@params2)
 
       assert {:error, :no_funds} = AccountInternal.withdraw(account.account_number, 100)
 
@@ -87,8 +108,8 @@ defmodule HelixBank.Internal.AccountTest do
     end
 
     test "transfer money" do
-      {:ok, account} = AccountInternal.create_account(@params)
-      {:ok, account2} = AccountInternal.create_account(@params2)
+      {:ok, account} = AccountInternal.register_account(@params)
+      {:ok, account2} = AccountInternal.register_account(@params2)
 
       assert {:ok, changeset} = AccountInternal.deposit(account.account_number, 100)
       assert AccountInternal.get_amount_from_account(account.account_number) == 100
@@ -99,4 +120,5 @@ defmodule HelixBank.Internal.AccountTest do
       assert AccountInternal.get_amount_from_account(account2.account_number) == 100
     end
   end
+
 end

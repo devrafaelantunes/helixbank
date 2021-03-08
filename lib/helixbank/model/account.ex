@@ -19,7 +19,7 @@ defmodule HelixBank.Model.Account do
 
   def change_account(%__MODULE__{} = account) do
     change(account)
-    # create_changeset(account, %{})
+    create_changeset(account, %{})
   end
 
   def change_registration(%__MODULE__{} = account) do

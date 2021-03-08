@@ -7,7 +7,7 @@ defmodule HelixbankWeb.UserController do
   alias Helixbank.Repo
   plug :authenticate when action in [:index]
 
-  defp authenticate(conn, _opts) do
+  def authenticate(conn, _opts) do
     if conn.assigns.current_account do
       conn
     else
