@@ -4,6 +4,7 @@ defmodule HelixbankWeb.UserController do
   alias HelixBank.Utils
   alias HelixBank.Internal.Account, as: AccountInternal
   alias HelixBank.Model.Account, as: Account
+  alias Helixbank.Repo
   plug :authenticate when action in [:index]
 
   defp authenticate(conn, _opts) do
@@ -119,50 +120,93 @@ defmodule HelixbankWeb.UserController do
     render(conn, "new_transfer.html")
   end
 
+  def raise_error(conn, error_description) do
+    conn
+    |> put_flash(:error, error_description)
+    |> render("new_transfer.html")
+  end
+
+
   def make_transfer(conn, params) do
     account_number = conn.assigns.current_account.account_number
     params = Utils.atomify_map(params)
     agreement = params.transfer.agreement
 
     if params.transfer.recipient_account_number == "" or params.transfer.amount == "" do
-      conn
-      |> put_flash(:error, "It cannot be blank")
-      |> render("new_transfer.html")
+        raise_error(conn, "It cannot be blank")
     else
-
       recipient_account_number = String.to_integer(params.transfer.recipient_account_number)
       amount = String.to_integer(params.transfer.amount)
       name = AccountInternal.get_account_name(recipient_account_number)
 
-      if agreement == "false" do
-        conn
-        |> put_flash(:error, "You must agree with the fee.")
-        |> render("new_transfer.html")
-      else
-        if name == nil or amount < 0 or recipient_account_number == account_number do
-          conn
-          |> put_flash(:error, "The account does not exist or it is your own.")
-          |> render("new_transfer.html")
-        else
-          if amount + 1 > AccountInternal.get_amount_from_account(account_number) do
-            conn
-            |> put_flash(:error, "You have no funds!")
-            |> render("new_transfer.html")
-          else
+      cond do
+        agreement == "false" ->
+          raise_error(conn, "You must agree with the fee")
+
+        name == nil or recipient_account_number == account_number ->
+          raise_error(conn, "The account does not exist or it is your own")
+
+        amount + 1 > AccountInternal.get_amount_from_account(account_number) or amount < 0 ->
+          raise_error(conn, "You have no funds")
+
+        true ->
+          Repo.transaction(fn ->
+            Ecto.Adapters.SQL.query(__MODULE__, "SET TRANSACTION ISOLATION LEVEL SERIALIZABLE")
             AccountInternal.transfer(account_number, recipient_account_number, amount)
             AccountInternal.withdraw(account_number, 1)
+          end)
 
-            conn
-            |> put_flash(:info, "You transferred R$#{amount} to #{name}'s account!")
-            |> redirect(to: Routes.user_path(conn, :info))
-          end
-        end
+          conn
+          |> put_flash(:info, "You transfered R$#{amount} to #{name}'s account!")
+          |> redirect(to: Routes.user_path(conn, :info))
       end
     end
   end
-
-  #def make_transfer2(conn, params) do
-
-
-  #end
 end
+
+
+
+  # def make_transfer2(conn, params) do
+  #   account_number = conn.assigns.current_account.account_number
+  #   params = Utils.atomify_map(params)
+  #   agreement = params.transfer.agreement
+
+  #   if params.transfer.recipient_account_number == "" or params.transfer.amount == "" do
+  #     conn
+  #     |> put_flash(:error, "It cannot be blank")
+  #     |> render("new_transfer.html")
+  #   else
+
+  #     recipient_account_number = String.to_integer(params.transfer.recipient_account_number)
+  #     amount = String.to_integer(params.transfer.amount)
+  #     name = AccountInternal.get_account_name(recipient_account_number)
+
+  #     if agreement == "false" do
+  #       conn
+  #       |> put_flash(:error, "You must agree with the fee.")
+  #       |> render("new_transfer.html")
+  #     else
+  #       if name == nil or amount < 0 or recipient_account_number == account_number do
+  #         conn
+  #         |> put_flash(:error, "The account does not exist or it is your own.")
+  #         |> render("new_transfer.html")
+  #       else
+  #         if amount + 1 > AccountInternal.get_amount_from_account(account_number) do
+  #           conn
+  #           |> put_flash(:error, "You have no funds!")
+  #           |> render("new_transfer.html")
+  #         else
+  #           AccountInternal.transfer(account_number, recipient_account_number, amount)
+
+
+
+  #           AccountInternal.withdraw(account_number, 1)
+
+  #           conn
+  #           |> put_flash(:info, "You transferred R$#{amount} to #{name}'s account!")
+  #           |> redirect(to: Routes.user_path(conn, :info))
+  #         end
+  #       end
+  #     end
+  #   end
+  # end
