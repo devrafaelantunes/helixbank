@@ -79,7 +79,7 @@ defmodule HelixBank.Model.Account do
     end
   end
 
-  def update_amount(account, new_value) do
+  def update_amount(account, new_value) do # this does not belong here ^^
     change(account, amount: new_value)
   end
 end
